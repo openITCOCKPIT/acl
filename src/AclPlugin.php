@@ -24,15 +24,21 @@ use Cake\Core\BasePlugin;
  */
 class AclPlugin extends BasePlugin
 {
-    /**
-     * Add console commands if bake is also available.
-     *
-     * @param \Cake\Console\CommandCollection $commands The command collection to update
-     * @return \Cake\Console\CommandCollection
-     */
-    public function console(CommandCollection $commands): CommandCollection
-    {
-        return $commands;
-    }
+
+	/**
+	 * @var bool
+	 */
+	protected bool $middlewareEnabled = false;
+
+	/**
+	 * @var bool
+	 */
+	protected bool $bootstrapEnabled = false;
+
+	/**
+	 * @var bool
+	 */
+	protected bool $routesEnabled = false;
+
 }
 

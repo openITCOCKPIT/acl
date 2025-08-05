@@ -42,5 +42,10 @@
 
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "config": {
+	"allow-plugins": {
+		"dealerdirect/phpcodesniffer-composer-installer": true
+	}
+    }
 }
