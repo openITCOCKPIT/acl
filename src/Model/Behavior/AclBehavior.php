@@ -37,14 +37,14 @@ class AclBehavior extends Behavior
     /**
      * Table instance
      */
-    protected $_table = null;
+    protected Table $_table;
 
     /**
      * Maps ACL type options to ACL models
      *
      * @var array
      */
-    protected $_typeMaps = ['requester' => 'Aro', 'controlled' => 'Aco', 'both' => ['Aro', 'Aco']];
+    protected array $_typeMaps = ['requester' => 'Aro', 'controlled' => 'Aco', 'both' => ['Aro', 'Aco']];
 
     /**
      * Sets up the configuration for the model, and loads ACL models if they haven't been already
