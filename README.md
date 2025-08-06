@@ -1,14 +1,11 @@
 # CakePHP Acl Plugin
 
-[![Build Status](https://img.shields.io/travis/cakephp/acl/master.svg?style=flat-square)](https://travis-ci.org/cakephp/acl)
-[![Coverage Status](https://img.shields.io/codecov/c/github/cakephp/acl.svg?style=flat-square)](https://codecov.io/github/cakephp/acl)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.txt)
 
-> ℹ️ **The ACL Plugin is not actively maintained by the CakePHP core team.** ℹ️ PR's to fix problems are welcome.
->
-> As a modern alternative please check out the [Authentication](https://github.com/cakephp/authentication) and [Authorization](https://github.com/cakephp/authorization) plugins.
-
 A plugin for managing ACL in CakePHP applications.
+
+This is a fork of the [official CakePHP Acl plugin](https://github.com/cakephp/acl), which is no longer maintained.
+**This fork supports CakePHP 5.x.**
 
 ## Installing via composer
 
@@ -21,11 +18,11 @@ composer require cakephp/acl
 ```
 
 Then in your `src/Application.php`:
+
 ```php
-public function bootstrap()
-{
+public function bootstrap(): void {
     parent::bootstrap();
-    $this->addPlugin('Acl');
+    $this->addPlugin('Acl', ['bootstrap' => true]);
 }
 ```
 
@@ -52,7 +49,9 @@ public function initialize(array $config)
 
 ## Updating the entity
 
-Before you can start using the behavior, you MUST add the `parentNode()` method to the corresponding `Entity` file or the `AclBehavior` will not be able to determine the parent->child relationships. Also make make sure the method returns either null or a parent Model reference.
+Before you can start using the behavior, you MUST add the `parentNode()` method to the corresponding `Entity` file or
+the `AclBehavior` will not be able to determine the parent->child relationships. Also make make sure the method returns
+either null or a parent Model reference.
 
 ```php
 public function parentNode() {

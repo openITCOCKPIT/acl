@@ -31,22 +31,20 @@ use Cake\TestSuite\TestCase;
 /**
  * AroTwoTest class
  */
-class AroTwoTest extends ArosTable
-{
+class AroTwoTest extends ArosTable {
     /**
      * initialize
      *
      * @param array $config Configuration array
      * @return void
      */
-    public function initialize(array $config): void
-    {
+    public function initialize(array $config): void {
         parent::initialize($config);
         $this->setAlias('AroTwoTest');
         $this->setTable('aro_twos');
         $this->associations()->removeAll();
         $this->belongsToMany('AcoTwoTest', [
-            'through' => __NAMESPACE__ . '\PermissionTwoTest',
+            'through'   => __NAMESPACE__ . '\PermissionTwoTest',
             'className' => __NAMESPACE__ . '\AroTwoTest',
         ]);
     }
@@ -55,22 +53,20 @@ class AroTwoTest extends ArosTable
 /**
  * AcoTwoTest class
  */
-class AcoTwoTest extends AcosTable
-{
+class AcoTwoTest extends AcosTable {
     /**
      * initialize
      *
      * @param array $config Configuration array
      * @return void
      */
-    public function initialize(array $config): void
-    {
+    public function initialize(array $config): void {
         parent::initialize($config);
         $this->setAlias('AcoTwoTest');
         $this->setTable('aco_twos');
         $this->associations()->removeAll();
         $this->belongsToMany('AroTwoTest', [
-            'through' => __NAMESPACE__ . '\PermissionTwoTest',
+            'through'   => __NAMESPACE__ . '\PermissionTwoTest',
             'className' => __NAMESPACE__ . '\AroTwoTest',
         ]);
     }
@@ -79,16 +75,14 @@ class AcoTwoTest extends AcosTable
 /**
  * PermissionTwoTest class
  */
-class PermissionTwoTest extends PermissionsTable
-{
+class PermissionTwoTest extends PermissionsTable {
     /**
      * initialize
      *
      * @param array $config Configuration array
      * @return void
      */
-    public function initialize(array $config): void
-    {
+    public function initialize(array $config): void {
         parent::initialize($config);
         $this->setAlias('PermissionTwoTest');
         $this->setEntityClass('Acl\Model\Entity\Permission');
@@ -96,11 +90,11 @@ class PermissionTwoTest extends PermissionsTable
         $this->associations()->removeAll();
         $this->belongsTo('AroTwoTest', [
             'foreignKey' => 'aro_id',
-            'className' => __NAMESPACE__ . '\AroTwoTest',
+            'className'  => __NAMESPACE__ . '\AroTwoTest',
         ]);
         $this->belongsTo('AcoTwoTest', [
             'foreignKey' => 'aco_id',
-            'className' => __NAMESPACE__ . '\AcoTwoTest',
+            'className'  => __NAMESPACE__ . '\AcoTwoTest',
         ]);
     }
 }
@@ -108,13 +102,11 @@ class PermissionTwoTest extends PermissionsTable
 /**
  * DbAclTwoTest class
  */
-class DbAclTwoTest extends DbAcl
-{
+class DbAclTwoTest extends DbAcl {
     /**
      * construct method
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->Permission = TableRegistry::getTableLocator()->get('Permissions');
         $this->Aro = TableRegistry::getTableLocator()->get('AroTwoTest');
         $this->Aro->Permission = $this->Permission;
@@ -129,14 +121,13 @@ class DbAclTwoTest extends DbAcl
 /**
  * Test case for AclComponent using the DbAcl implementation.
  */
-class DbAclTest extends TestCase
-{
+class DbAclTest extends TestCase {
     /**
      * fixtures property
      *
      * @var array
      */
-    public $fixtures = [
+    public array $fixtures = [
         'app.AcoTwos',
         'app.AroTwos',
         'app.ArosAcoTwos',
@@ -147,8 +138,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function setUp(): void
-    {
+    public function setUp(): void {
         parent::setUp();
         Configure::write('Acl.classname', __NAMESPACE__ . '\DbAclTwoTest');
         Configure::write('Acl.database', 'test');
@@ -173,8 +163,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function tearDown(): void
-    {
+    public function tearDown(): void {
         parent::tearDown();
         unset($this->Acl);
     }
@@ -184,8 +173,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testCreate()
-    {
+    public function testCreate() {
         $aro = new Aro(['alias' => 'Chotchkey']);
         $aro = $this->Acl->Aro->save($aro);
         $this->assertTrue((bool)$aro);
@@ -217,15 +205,14 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testCreateWithParent()
-    {
+    public function testCreateWithParent() {
         $parent = $this->Acl->Aro->findByAlias('Peter')->first();
 
         $this->Acl->Aro->save(new Aro([
-            'alias' => 'Subordinate',
-            'model' => 'User',
+            'alias'       => 'Subordinate',
+            'model'       => 'User',
             'foreign_key' => 7,
-            'parent_id' => $parent->id,
+            'parent_id'   => $parent->id,
         ]));
         $result = $this->Acl->Aro->findByAlias('Subordinate')->first();
         $this->assertSame('AroTwoTest', $result->getSource());
@@ -238,8 +225,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testAllow()
-    {
+    public function testAllow() {
         $this->expectException(\PHPUnit\Framework\Error\Warning::class);
         $this->assertFalse($this->Acl->check('Micheal', 'tpsReports', 'read'));
         $this->assertTrue($this->Acl->allow('Micheal', 'tpsReports', ['read', 'delete', 'update']));
@@ -276,8 +262,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testAllowInvalidPermission()
-    {
+    public function testAllowInvalidPermission() {
         $this->expectException(\Exception::class);
         $this->Acl->allow('Micheal', 'tpsReports', 'derp');
     }
@@ -287,8 +272,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testAllowInvalidNode()
-    {
+    public function testAllowInvalidNode() {
         $this->expectException(\PHPUnit\Framework\Error\Warning::class);
         $this->Acl->allow('Homer', 'tpsReports', 'create');
     }
@@ -298,8 +282,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testCheck()
-    {
+    public function testCheck() {
         $this->assertTrue($this->Acl->check('Samir', 'print', 'read'));
         $this->assertTrue($this->Acl->check('Lumbergh', 'current', 'read'));
         $this->assertFalse($this->Acl->check('Milton', 'smash', 'read'));
@@ -319,8 +302,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testCheckInvalidNode()
-    {
+    public function testCheckInvalidNode() {
         $this->expectException(\PHPUnit\Framework\Error\Warning::class);
         $this->assertFalse($this->Acl->check('WRONG', 'tpsReports', 'read'));
     }
@@ -330,8 +312,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testCheckInvalidPermission()
-    {
+    public function testCheckInvalidPermission() {
         $this->expectException(\PHPUnit\Framework\Error\Notice::class);
         $this->Acl->check('Lumbergh', 'smash', 'foobar');
     }
@@ -341,8 +322,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testCheckMissingPermission()
-    {
+    public function testCheckMissingPermission() {
         $this->expectException(\PHPUnit\Framework\Error\Warning::class);
         $this->Acl->check('users', 'NonExistent', 'read');
     }
@@ -355,8 +335,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testAclCascadingDeny()
-    {
+    public function testAclCascadingDeny() {
         $this->Acl->inherit('Bobs', 'ROOT', '*');
         $this->assertTrue($this->Acl->check('admin', 'tpsReports', 'delete'));
         $this->assertTrue($this->Acl->check('Bobs', 'tpsReports', 'delete'));
@@ -370,8 +349,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testDeny()
-    {
+    public function testDeny() {
         $this->expectException(\PHPUnit\Framework\Error\Warning::class);
         $this->assertTrue($this->Acl->check('Micheal', 'smash', 'delete'));
         $this->Acl->deny('Micheal', 'smash', 'delete');
@@ -390,7 +368,7 @@ class DbAclTest extends TestCase
 
         $result = $this->Acl->Aro->Permission->find('all', [
             'conditions' => ['AroTwoTest.alias' => 'Samir'],
-            'contain' => 'AroTwoTest',
+            'contain'    => 'AroTwoTest',
         ])->toArray();
         $expected = '-1';
         $this->assertSame($expected, $result[0]->_delete);
@@ -403,8 +381,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testAclNodeLookup()
-    {
+    public function testAclNodeLookup() {
         $result = $this->Acl->Aro->node('root/users/Samir')->enableHydration(false)->toArray();
         $expected = [
             ['id' => '7', 'parent_id' => '4', 'model' => 'User', 'foreign_key' => 3, 'alias' => 'Samir'],
@@ -428,8 +405,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testInherit()
-    {
+    public function testInherit() {
         //parent doesn't have access inherit should still deny
         $this->assertFalse($this->Acl->check('Milton', 'smash', 'delete'));
         $this->Acl->inherit('Milton', 'smash', 'delete');
@@ -446,8 +422,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testGrant()
-    {
+    public function testGrant() {
         $this->expectException(\PHPUnit\Framework\Error\Warning::class);
         $this->assertFalse($this->Acl->check('Samir', 'tpsReports', 'create'));
         $this->Acl->allow('Samir', 'tpsReports', 'create');
@@ -468,8 +443,7 @@ class DbAclTest extends TestCase
      *
      * @return void
      */
-    public function testRevoke()
-    {
+    public function testRevoke() {
         $this->expectException(\PHPUnit\Framework\Error\Warning::class);
         $this->assertTrue($this->Acl->check('Bobs', 'tpsReports', 'read'));
         $this->Acl->deny('Bobs', 'tpsReports', 'read');
@@ -494,12 +468,11 @@ class DbAclTest extends TestCase
      * @param bool $printTreesToo Set to True to output tree data to screen
      * @return void
      */
-    protected function _debug($printTreesToo = false)
-    {
+    protected function _debug($printTreesToo = false) {
         $this->Acl->Aro->displayField = 'alias';
         $this->Acl->Aco->displayField = 'alias';
-        $aros = $this->Acl->Aro->find('list', ['order' => 'lft']);
-        $acos = $this->Acl->Aco->find('list', ['order' => 'lft']);
+        $aros = $this->Acl->Aro->find('list', ...['order' => 'lft']);
+        $acos = $this->Acl->Aco->find('list', ...['order' => 'lft']);
         $rights = ['*', 'create', 'read', 'update', 'delete'];
         $permissions['Aros v Acos >'] = $acos;
         foreach ($aros as $aro) {
@@ -513,7 +486,7 @@ class DbAclTest extends TestCase
                             break;
                         }
                         $perms .= $right[0];
-                    } elseif ($right !== '*') {
+                    } else if ($right !== '*') {
                         $perms .= ' ';
                     }
                 }
@@ -542,8 +515,7 @@ class DbAclTest extends TestCase
      * @param int $len Padding length
      * @return void
      */
-    protected function _pad($string = '', $len = 14)
-    {
+    protected function _pad($string = '', $len = 14) {
         return str_pad($string, $len);
     }
 }

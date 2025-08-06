@@ -35,9 +35,8 @@ include dirname(__FILE__) . DS . 'test_plugin_admin_controllers.php';
 /**
  * AclExtras Shell Test case
  */
-class AclExtrasTest extends TestCase
-{
-    public $fixtures = [
+class AclExtrasTest extends TestCase {
+    public array $fixtures = [
         'app.Acos',
         'app.Aros',
         'app.ArosAcos',
@@ -48,8 +47,7 @@ class AclExtrasTest extends TestCase
      *
      * @return void
      */
-    public function setUp(): void
-    {
+    public function setUp(): void {
         parent::setUp();
         Configure::write('Acl.classname', 'DbAcl');
         Configure::write('Acl.database', 'test');
@@ -64,8 +62,7 @@ class AclExtrasTest extends TestCase
      *
      * @return void
      */
-    public function tearDown(): void
-    {
+    public function tearDown(): void {
         parent::tearDown();
         unset($this->Task);
     }
@@ -75,8 +72,7 @@ class AclExtrasTest extends TestCase
      *
      * @return void
      */
-    public function testRecover()
-    {
+    public function testRecover() {
         $this->Task->startup();
         $this->Task->args = ['Aco'];
         $this->Task->Acl->Aco = $this->getMockBuilder('Aco')
@@ -98,8 +94,7 @@ class AclExtrasTest extends TestCase
      *
      * @return void
      */
-    public function testStartup()
-    {
+    public function testStartup() {
         $this->assertEquals($this->Task->Acl, null);
         $this->Task->startup();
         $this->assertInstanceOf('Acl\Controller\Component\AclComponent', $this->Task->Acl);
@@ -110,15 +105,13 @@ class AclExtrasTest extends TestCase
      *
      * @return void
      */
-    protected function _clean()
-    {
+    protected function _clean() {
         $tableName = 'acos';
         $db = ConnectionManager::get('test');
         $db->execute('DELETE FROM ' . $tableName);
     }
 
-    protected function _setup()
-    {
+    protected function _setup() {
         $this->Task->expects($this->any())
             ->method('getControllerList')
             ->with(null)
@@ -135,8 +128,7 @@ class AclExtrasTest extends TestCase
         $this->Task->startup();
     }
 
-    protected function _setupAdminPrefix()
-    {
+    protected function _setupAdminPrefix() {
         $this->Task = $this->getMockBuilder('Acl\AclExtras')
             ->setMethods(['in', 'out', 'hr', 'createFile', 'error', 'err', 'clear', 'getControllerList', 'getPrefixes'])
             ->getMock();
@@ -158,8 +150,7 @@ class AclExtrasTest extends TestCase
         $this->Task->startup();
     }
 
-    protected function _setupWithNestedPrefixRoutes()
-    {
+    protected function _setupWithNestedPrefixRoutes() {
         $this->Task = $this->getMockBuilder('Acl\AclExtras')
             ->setMethods(['in', 'out', 'hr', 'createFile', 'error', 'err', 'clear', 'getControllerList', 'getPrefixes'])
             ->getMock();
@@ -192,8 +183,7 @@ class AclExtrasTest extends TestCase
      *
      * @return void
      */
-    public function testAcoUpdate()
-    {
+    public function testAcoUpdate() {
         $this->_clean();
         $this->_setup();
         $this->Task->acoUpdate();
@@ -203,7 +193,7 @@ class AclExtrasTest extends TestCase
         $result = $Aco->node('controllers/Comments')->toArray();
         $this->assertEquals($result[0]['alias'], 'Comments');
 
-        $result = $Aco->find('children', ['for' => $result[0]['id']])->toArray();
+        $result = $Aco->find('children', ...['for' => $result[0]['id']])->toArray();
         $this->assertCount(3, $result);
         $this->assertEquals($result[0]['alias'], 'add');
         $this->assertEquals($result[1]['alias'], 'index');
@@ -211,17 +201,16 @@ class AclExtrasTest extends TestCase
 
         $result = $Aco->node('controllers/Posts')->toArray();
         $this->assertEquals($result[0]['alias'], 'Posts');
-        $result = $Aco->find('children', ['for' => $result[0]['id']])->toArray();
+        $result = $Aco->find('children', ...['for' => $result[0]['id']])->toArray();
         $this->assertCount(3, $result);
 
         $result = $Aco->node('controllers/BigLongNames')->toArray();
         $this->assertEquals($result[0]['alias'], 'BigLongNames');
-        $result = $Aco->find('children', ['for' => $result[0]['id']])->toArray();
+        $result = $Aco->find('children', ...['for' => $result[0]['id']])->toArray();
         $this->assertEquals(count($result), 4);
     }
 
-    public function testAcoUpdateAdminPrefix()
-    {
+    public function testAcoUpdateAdminPrefix() {
         $this->_clean();
         $this->_setupAdminPrefix();
         $this->Task->acoUpdate();
@@ -230,12 +219,12 @@ class AclExtrasTest extends TestCase
 
         $result = $Aco->node('controllers/Admin/Posts')->toArray();
         $this->assertEquals($result[0]['alias'], 'Posts');
-        $result = $Aco->find('children', ['for' => $result[0]['id']])->toArray();
+        $result = $Aco->find('children', ...['for' => $result[0]['id']])->toArray();
         $this->assertCount(3, $result);
 
         $result = $Aco->node('controllers/Admin/BigLongNames')->toArray();
         $this->assertEquals($result[0]['alias'], 'BigLongNames');
-        $result = $Aco->find('children', ['for' => $result[0]['id']])->toArray();
+        $result = $Aco->find('children', ...['for' => $result[0]['id']])->toArray();
         $this->assertEquals(count($result), 4);
     }
 
@@ -244,8 +233,7 @@ class AclExtrasTest extends TestCase
      *
      * @return void
      */
-    public function testAcoUpdateWithNestedPrefixRoutes()
-    {
+    public function testAcoUpdateWithNestedPrefixRoutes() {
         $this->_clean();
         Configure::write('App.namespace', 'TestApp');
         $this->_setupWithNestedPrefixRoutes();
@@ -262,20 +250,19 @@ class AclExtrasTest extends TestCase
         Configure::write('App.namespace', 'Acl');
     }
 
-    protected function _createNode($parent, $expected)
-    {
+    protected function _createNode($parent, $expected) {
         $Aco = $this->Task->Acl->Aco;
         $Aco->cacheQueries = false;
 
         $result = $Aco->node($parent)->toArray();
         $new = [
             'parent_id' => $result[0]['id'],
-            'alias' => 'someMethod',
+            'alias'     => 'someMethod',
         ];
         $new = $Aco->newEntity($new);
         $Aco->save($new);
 
-        $children = $Aco->find('children', ['for' => $result[0]['id']])->toArray();
+        $children = $Aco->find('children', ...['for' => $result[0]['id']])->toArray();
         $this->assertCount($expected, $children);
 
         return $result;
@@ -286,8 +273,7 @@ class AclExtrasTest extends TestCase
      *
      * @return void
      */
-    public function testAcoSyncRemoveMethods()
-    {
+    public function testAcoSyncRemoveMethods() {
         $this->_clean();
         $this->_setup();
         $this->Task->acoUpdate();
@@ -299,7 +285,7 @@ class AclExtrasTest extends TestCase
         //$adminPosts = $this->_createNode('controllers/Admin/Posts', 4);
 
         $this->Task->acoSync();
-        $children = $Aco->find('children', ['for' => $basic[0]['id']])->toArray();
+        $children = $Aco->find('children', ...['for' => $basic[0]['id']])->toArray();
         $this->assertEquals(count($children), 3);
         //$children = $Aco->find('children', ['for' => $adminPosts[0]['id']])->toArray();
         //$this->assertEquals(count($children), 3);
@@ -315,8 +301,7 @@ class AclExtrasTest extends TestCase
      *
      * @return void
      */
-    public function testAcoUpdateAddingMethods()
-    {
+    public function testAcoUpdateAddingMethods() {
         $this->_clean();
         $this->_setup();
         $this->Task->acoUpdate();
@@ -325,14 +310,14 @@ class AclExtrasTest extends TestCase
         $Aco->cacheQueries = false;
 
         $result = $Aco->node('controllers/Comments')->toArray();
-        $children = $Aco->find('children', ['for' => $result[0]['id']])->toArray();
+        $children = $Aco->find('children', ...['for' => $result[0]['id']])->toArray();
         $this->assertCount(3, $children);
 
         $Aco->delete($children[0]);
         $Aco->delete($children[1]);
         $this->Task->acoUpdate();
 
-        $children = $Aco->find('children', ['for' => $result[0]['id']])->toArray();
+        $children = $Aco->find('children', ...['for' => $result[0]['id']])->toArray();
         $this->assertCount(3, $children);
     }
 
@@ -341,8 +326,7 @@ class AclExtrasTest extends TestCase
      *
      * @return void
      */
-    public function testAddingControllers()
-    {
+    public function testAddingControllers() {
         $this->_clean();
         $this->_setup();
         $this->Task->acoUpdate();
@@ -364,8 +348,7 @@ class AclExtrasTest extends TestCase
      *
      * @return void
      */
-    public function testUpdateWithPlugins()
-    {
+    public function testUpdateWithPlugins() {
 
         $this->clearPlugins();
         $this->loadPlugins([
@@ -417,7 +400,7 @@ class AclExtrasTest extends TestCase
         $this->assertNotFalse($result);
         $result = $result->toArray();
         $this->assertEquals($result[0]['alias'], 'PluginTwo');
-        $result = $Aco->find('children', ['for' => $result[0]['id']])->toArray();
+        $result = $Aco->find('children', ...['for' => $result[0]['id']])->toArray();
         $this->assertCount(3, $result);
         $this->assertEquals($result[0]['alias'], 'index');
         $this->assertEquals($result[1]['alias'], 'add');
@@ -429,8 +412,7 @@ class AclExtrasTest extends TestCase
      *
      * @return void
      */
-    public function testSyncWithNestedPlugin()
-    {
+    public function testSyncWithNestedPlugin() {
         $this->clearPlugins();
         $this->loadPlugins([new \Nested\TestPluginTwo\Plugin()]);
 

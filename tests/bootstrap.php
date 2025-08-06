@@ -40,54 +40,49 @@ define('CONFIG', APP . 'config' . DS);
 define('CACHE', TMP);
 define('LOGS', TMP);
 
-require CAKE . 'Core/ClassLoader.php';
-
-$loader = new Cake\Core\ClassLoader();
-$loader->register();
-
-$loader->addNamespace('Cake\Test\Fixture', ROOT . '/vendor/cakephp/cakephp/tests/Fixture');
-$loader->addNamespace('TestApp', APP . 'src');
-$loader->addNamespace('TestPlugin', APP . 'Plugin/TestPlugin/src');
-$loader->addNamespace('Nested\TestPluginTwo', APP . 'Plugin/Nested/TestPluginTwo/src');
-
 require_once CORE_PATH . 'config' . DS . 'bootstrap.php';
+
+/*
+ * Load global functions for collections, translations, debugging etc.
+ */
+require CAKE . 'functions.php';
 
 date_default_timezone_set('UTC');
 mb_internal_encoding('UTF-8');
 
 Configure::write('debug', true);
 Configure::write('App', [
-    'namespace' => 'Acl',
-    'encoding' => 'UTF-8',
-    'base' => false,
-    'baseUrl' => false,
-    'dir' => APP_DIR,
-    'webroot' => WEBROOT_DIR,
-    'www_root' => WWW_ROOT,
-    'fullBaseUrl' => 'http://localhost',
+    'namespace'    => 'Acl',
+    'encoding'     => 'UTF-8',
+    'base'         => false,
+    'baseUrl'      => false,
+    'dir'          => APP_DIR,
+    'webroot'      => WEBROOT_DIR,
+    'www_root'     => WWW_ROOT,
+    'fullBaseUrl'  => 'http://localhost',
     'imageBaseUrl' => 'img/',
-    'jsBaseUrl' => 'js/',
-    'cssBaseUrl' => 'css/',
-    'paths' => [
-        'plugins' => [APP . 'Plugin' . DS],
+    'jsBaseUrl'    => 'js/',
+    'cssBaseUrl'   => 'css/',
+    'paths'        => [
+        'plugins'   => [APP . 'Plugin' . DS],
         'templates' => [APP . 'Template' . DS],
     ],
 ]);
 
 Configure::write('Acl', [
     'cacheConfig' => 'tests',
-    'database' => 'test',
+    'database'    => 'test',
 ]);
 
 Cache::setConfig([
-    '_cake_core_' => [
-        'engine' => 'File',
-        'prefix' => 'cake_core_',
+    '_cake_core_'  => [
+        'engine'    => 'File',
+        'prefix'    => 'cake_core_',
         'serialize' => true,
     ],
     '_cake_model_' => [
-        'engine' => 'File',
-        'prefix' => 'cake_model_',
+        'engine'    => 'File',
+        'prefix'    => 'cake_model_',
         'serialize' => true,
     ],
 ]);
@@ -107,12 +102,12 @@ Log::setConfig([
     'debug' => [
         'engine' => 'Cake\Log\Engine\FileLog',
         'levels' => ['notice', 'info', 'debug'],
-        'file' => 'debug',
+        'file'   => 'debug',
     ],
     'error' => [
         'engine' => 'Cake\Log\Engine\FileLog',
         'levels' => ['warning', 'error', 'critical', 'alert', 'emergency'],
-        'file' => 'error',
+        'file'   => 'error',
     ],
 ]);
 

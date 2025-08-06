@@ -30,24 +30,22 @@ use Cake\TestSuite\TestCase;
 /**
  * Aro Test Wrapper
  */
-class DbAroTest extends ArosTable
-{
+class DbAroTest extends ArosTable {
     /**
      * initialize
      *
      * @param array $config Configuration array
      * @return void
      */
-    public function initialize(array $config): void
-    {
+    public function initialize(array $config): void {
         parent::initialize($config);
         $this->setAlias('DbAroTest');
         $this->associations()->removeAll();
         $this->belongsToMany('DbAcoTest', [
-            'through' => __NAMESPACE__ . '\DbPermissionTest',
-            'className' => __NAMESPACE__ . '\DbAcoTest',
+            'through'          => __NAMESPACE__ . '\DbPermissionTest',
+            'className'        => __NAMESPACE__ . '\DbAcoTest',
             'targetForeignKey' => 'id',
-            'foreignKey' => 'aro_id',
+            'foreignKey'       => 'aro_id',
         ]);
     }
 }
@@ -55,24 +53,22 @@ class DbAroTest extends ArosTable
 /**
  * Aco Test Wrapper
  */
-class DbAcoTest extends AcosTable
-{
+class DbAcoTest extends AcosTable {
     /**
      * initialize
      *
      * @param array $config Configuration array
      * @return void
      */
-    public function initialize(array $config): void
-    {
+    public function initialize(array $config): void {
         parent::initialize($config);
         $this->setAlias('DbAcoTest');
         $this->associations()->removeAll();
         $this->belongsToMany('DbAroTest', [
-            'through' => __NAMESPACE__ . '\DbPermissionTest',
-            'className' => __NAMESPACE__ . '\DbAroTest',
+            'through'          => __NAMESPACE__ . '\DbPermissionTest',
+            'className'        => __NAMESPACE__ . '\DbAroTest',
             'targetForeignKey' => 'id',
-            'foreignKey' => 'aco_id',
+            'foreignKey'       => 'aco_id',
         ]);
     }
 }
@@ -80,25 +76,23 @@ class DbAcoTest extends AcosTable
 /**
  * Permission Test Wrapper
  */
-class DbPermissionTest extends PermissionsTable
-{
+class DbPermissionTest extends PermissionsTable {
     /**
      * initialize
      *
      * @param array $config Configuration array
      * @return void
      */
-    public function initialize(array $config): void
-    {
+    public function initialize(array $config): void {
         parent::initialize($config);
         $this->setAlias('DbPermissionTest');
         $this->associations()->removeAll();
         $this->belongsTo('DbAroTest', [
-            'className' => __NAMESPACE__ . '\DbAroTest',
+            'className'  => __NAMESPACE__ . '\DbAroTest',
             'foreignKey' => 'id',
         ]);
         $this->belongsTo('DbAcoTest', [
-            'className' => __NAMESPACE__ . '\DbAcoTest',
+            'className'  => __NAMESPACE__ . '\DbAcoTest',
             'foreignKey' => 'id',
         ]);
     }
@@ -107,16 +101,14 @@ class DbPermissionTest extends PermissionsTable
 /**
  * DboActionTest class
  */
-class DbAcoActionTest extends AcoActionsTable
-{
+class DbAcoActionTest extends AcoActionsTable {
     /**
      * initialize
      *
      * @param array $config Configuration array
      * @return void
      */
-    public function initialize(array $config): void
-    {
+    public function initialize(array $config): void {
         $this->setTable('aco_actions');
         $this->belongsTo('DbAcoTest', [
             'foreignKey' => 'aco_id',
@@ -127,19 +119,17 @@ class DbAcoActionTest extends AcoActionsTable
 /**
  * DbAroUserTest class
  */
-class DbAroUserTest extends Entity
-{
+class DbAroUserTest extends Entity {
     /**
      * bindNode method
      *
      * @param string|array|Model $ref Ref
      * @return void
      */
-    public function bindNode($ref = null)
-    {
+    public function bindNode($ref = null) {
         if (Configure::read('DbAclbindMode') === 'string') {
             return 'ROOT/admins/Gandalf';
-        } elseif (Configure::read('DbAclbindMode') === 'array') {
+        } else if (Configure::read('DbAclbindMode') === 'array') {
             return ['DbAroTest' => ['DbAroTest.model' => 'AuthUser', 'DbAroTest.foreign_key' => 2]];
         }
     }
@@ -148,21 +138,19 @@ class DbAroUserTest extends Entity
 /**
  * TestDbAcl class
  */
-class TestDbAcl extends DbAcl
-{
+class TestDbAcl extends DbAcl {
 }
 
 /**
  * AclNodeTest class
  */
-class AclNodeTest extends TestCase
-{
+class AclNodeTest extends TestCase {
     /**
      * fixtures property
      *
      * @var array
      */
-    public $fixtures = [
+    public array $fixtures = [
         'app.AcoActions',
         'app.Acos',
         'app.Aros',
@@ -175,8 +163,7 @@ class AclNodeTest extends TestCase
      *
      * @return void
      */
-    public function setUp(): void
-    {
+    public function setUp(): void {
         parent::setUp();
         Configure::write('Acl.classname', 'TestDbAcl');
         Configure::write('Acl.database', 'test');
@@ -195,8 +182,7 @@ class AclNodeTest extends TestCase
      *
      * @return void
      */
-    public function testNode()
-    {
+    public function testNode() {
         $Aco = TableRegistry::getTableLocator()->get('DbAcoTest');
 
         $result = $Aco->node('Controller1');
@@ -282,8 +268,7 @@ class AclNodeTest extends TestCase
      *
      * @return void
      */
-    public function testNodeWithDuplicatePathSegments()
-    {
+    public function testNodeWithDuplicatePathSegments() {
         $Aco = TableRegistry::getTableLocator()->get('DbAcoTest');
         $nodes = $Aco->node('ROOT/Users');
         $this->assertSame(1, $nodes->toArray()[0]->parent_id, 'Parent id does not point at ROOT. %s');
@@ -294,8 +279,7 @@ class AclNodeTest extends TestCase
      *
      * @return void
      */
-    public function testNodeArrayFind()
-    {
+    public function testNodeArrayFind() {
         $Aro = TableRegistry::getTableLocator()->get('DbAroTest');
         $Aro->setEntityClass(__NAMESPACE__ . '\DbAroUserTest');
         Configure::write('DbAclbindMode', 'string');
@@ -314,8 +298,7 @@ class AclNodeTest extends TestCase
      *
      * @return void
      */
-    public function testNodeObjectFind()
-    {
+    public function testNodeObjectFind() {
         $Aro = TableRegistry::getTableLocator()->get('DbAroTest');
         $Model = new DbAroUserTest(['id' => 1]);
         $Model->setSource('AuthUser');
@@ -334,8 +317,7 @@ class AclNodeTest extends TestCase
      *
      * @return void
      */
-    public function testNodeAliasParenting()
-    {
+    public function testNodeAliasParenting() {
         $Aco = TableRegistry::getTableLocator()->get('DbAcoTest');
         $conn = $Aco->getConnection();
         $statements = $Aco->getSchema()->truncateSql($conn);
@@ -366,8 +348,7 @@ class AclNodeTest extends TestCase
      *
      * @return void
      */
-    public function testNodeActionAuthorize()
-    {
+    public function testNodeActionAuthorize() {
         $this->loadPlugins([new \TestPlugin\Plugin()]);
 
         $Aro = TableRegistry::getTableLocator()->get('DbAroTest');

@@ -20,12 +20,11 @@ use Cake\TestSuite\Fixture\TestFixture;
 /**
  * Short description for class.
  */
-class AcoActionsFixture extends TestFixture
-{
+class AcoActionsFixture extends TestFixture {
     /**
      * records property
      *
      * @var array
      */
-    public $records = [];
+    public array $records = [];
 }

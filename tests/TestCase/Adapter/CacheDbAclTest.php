@@ -25,8 +25,7 @@ use Cake\TestSuite\TestCase;
 /**
  * CachedDbAclTwoTest class
  */
-class CachedDbAclTwoTest extends CachedDbAcl
-{
+class CachedDbAclTwoTest extends CachedDbAcl {
     //public $Permission = null;
 
     /**
@@ -45,8 +44,7 @@ class CachedDbAclTwoTest extends CachedDbAcl
      * @param string $action Action
      * @return string
      */
-    public function getCacheKey($aro, $aco, $action)
-    {
+    public function getCacheKey($aro, $aco, $action) {
         return $this->_getCacheKey($aro, $aco, $action);
     }
 }
@@ -54,14 +52,13 @@ class CachedDbAclTwoTest extends CachedDbAcl
 /**
  * Test case for AclComponent using the CachedDbAcl implementation.
  */
-class CacheDbAclTest extends TestCase
-{
+class CacheDbAclTest extends TestCase {
     /**
      * fixtures property
      *
      * @var array
      */
-    public $fixtures = [
+    public array $fixtures = [
         'core.Users',
     ];
 
@@ -70,8 +67,7 @@ class CacheDbAclTest extends TestCase
      *
      * @return void
      */
-    public function setUp(): void
-    {
+    public function setUp(): void {
         parent::setUp();
         Configure::write('Acl.classname', __NAMESPACE__ . '\CachedDbAclTwoTest');
 
@@ -79,7 +75,7 @@ class CacheDbAclTest extends TestCase
 
         Cache::setConfig('tests', [
             'engine' => 'File',
-            'path' => TMP . 'test_acl',
+            'path'   => TMP . 'test_acl',
             'prefix' => 'test_',
         ]);
     }
@@ -89,8 +85,7 @@ class CacheDbAclTest extends TestCase
      *
      * @return void
      */
-    public function tearDown(): void
-    {
+    public function tearDown(): void {
         parent::tearDown();
         unset($this->Acl);
         Cache::clear('tests');
@@ -102,8 +97,7 @@ class CacheDbAclTest extends TestCase
      *
      * @return void
      */
-    public function testCacheKeys()
-    {
+    public function testCacheKeys() {
         $this->assertSame('samir_print_read', $this->CachedDb->getCacheKey('Samir', 'print', 'read'));
         $this->assertSame('samir_root_tpsreports_update', $this->CachedDb->getCacheKey('Samir', 'ROOT/tpsReports/update', '*'));
         $this->assertSame('users_1_print', $this->CachedDb->getCacheKey(['Users' => ['id' => 1]], 'print', '*'));
@@ -120,8 +114,7 @@ class CacheDbAclTest extends TestCase
      *
      * @return void
      */
-    public function testCaching()
-    {
+    public function testCaching() {
         $this->CachedDb->Permission = $this
             ->getMockBuilder('Acl\Model\Table\PermissionsTable')
             ->getMock();
@@ -141,8 +134,7 @@ class CacheDbAclTest extends TestCase
      *
      * @return void
      */
-    public function testCacheFalse()
-    {
+    public function testCacheFalse() {
         $this->CachedDb->Permission = $this
             ->getMockBuilder('Acl\Model\Table\PermissionsTable')
             ->getMock();
@@ -162,8 +154,7 @@ class CacheDbAclTest extends TestCase
      *
      * @return void
      */
-    public function testCacheCleared()
-    {
+    public function testCacheCleared() {
         $this->CachedDb->Permission = $this
             ->getMockBuilder('Acl\Model\Table\PermissionsTable')
             ->getMock();

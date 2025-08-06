@@ -20,14 +20,13 @@ use Cake\TestSuite\Fixture\TestFixture;
 /**
  * Short description for class.
  */
-class AroTwosFixture extends TestFixture
-{
+class AroTwosFixture extends TestFixture {
     /**
      * records property
      *
      * @var array
      */
-    public $records = [
+    public array $records = [
         ['parent_id' => null, 'model' => null, 'foreign_key' => null, 'alias' => 'root', 'lft' => '1', 'rght' => '20'],
         ['parent_id' => 1, 'model' => 'Group', 'foreign_key' => '1', 'alias' => 'admin', 'lft' => '2', 'rght' => '5'],
         ['parent_id' => 1, 'model' => 'Group', 'foreign_key' => '2', 'alias' => 'managers', 'lft' => '6', 'rght' => '9'],

@@ -20,14 +20,13 @@ use Cake\TestSuite\Fixture\TestFixture;
 /**
  * Class PeopleFixture
  */
-class PeopleFixture extends TestFixture
-{
+class PeopleFixture extends TestFixture {
     /**
      * records property
      *
      * @var array
      */
-    public $records = [
+    public array $records = [
         ['name' => 'person', 'mother_id' => 2, 'father_id' => 3],
         ['name' => 'mother', 'mother_id' => 4, 'father_id' => 5],
         ['name' => 'father', 'mother_id' => 6, 'father_id' => 7],
