@@ -26,7 +26,7 @@
         "cakephp/plugin-installer": "^2.0"
     },
     "require-dev": {
-        "cakephp/cakephp-codesniffer": "~4.2.0",
+        "cakephp/cakephp-codesniffer": "^5.0",
         "phpunit/phpunit": "^8.0"
     },
     "autoload": {
@@ -45,7 +45,8 @@
     "minimum-stability": "dev",
     "config": {
 	"allow-plugins": {
-		"dealerdirect/phpcodesniffer-composer-installer": true
-	}
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "cakephp/plugin-installer": true
+        }
     }
 }
