@@ -16,13 +16,14 @@ declare(strict_types=1);
 namespace Acl;
 
 use Acl\Controller\Component\AclComponent;
-use Cake\Console\Shell;
+use Acl\Model\Entity\Aco;
+use Acl\Model\Table\AcosTable;
+use Cake\Console\ConsoleIo;
 use Cake\Controller\ComponentRegistry;
 use Cake\Controller\Controller;
 use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
-use Cake\Filesystem\Folder;
 use Cake\Http\ServerRequest;
 use Cake\Routing\Router;
 use Cake\Utility\Hash;
@@ -33,8 +34,7 @@ use ReflectionException;
  * Provides features for additional ACL operations.
  * Can be used in either a CLI or Web context.
  */
-class AclExtras
-{
+class AclExtras {
     /**
      * Contains instance of AclComponent
      *
@@ -45,16 +45,9 @@ class AclExtras
     /**
      * Aco object
      *
-     * @var string
+     * @var AcosTable
      */
     public $Aco;
-
-    /**
-     * Contains arguments parsed from the command line.
-     *
-     * @var array
-     */
-    public $args;
 
     /**
      * Contains database source to use
@@ -104,9 +97,9 @@ class AclExtras
     protected $controller;
 
     /**
-     * @var \Cake\Console\Shell
+     * @var ConsoleIo
      */
-    protected $Shell;
+    protected $io;
 
     /**
      * Start up And load Acl Component / Aco model
@@ -114,13 +107,12 @@ class AclExtras
      * @param \Cake\Controller\Controller $controller Controller instance
      * @return void
      */
-    public function startup($controller = null)
-    {
+    public function startup($controller = null) {
         if (!$controller) {
             $controller = new Controller(new ServerRequest());
         }
         $registry = new ComponentRegistry();
-        $this->Acl = new AclComponent($registry, Configure::read('Acl'));
+        $this->Acl = new AclComponent($registry, Configure::read('Acl', []));
         $this->Aco = $this->Acl->Aco;
         $this->controller = $controller;
         $this->_buildPrefixes();
@@ -129,34 +121,32 @@ class AclExtras
     /**
      * Output a message.
      *
-     * Will either use shell->out, or controller->Flash->success()
+     * Will either use Command->out, or controller->Flash->success()
      *
      * @param string $msg The message to output.
      * @return void
      */
-    public function out($msg)
-    {
+    public function out($msg) {
         if (!empty($this->controller->Flash)) {
             $this->controller->Flash->success($msg);
         } else {
-            $this->Shell->out($msg);
+            $this->io->out($msg);
         }
     }
 
     /**
      * Output an error message.
      *
-     * Will either use shell->err, or controller->Flash->error()
+     * Will either use io->err, or controller->Flash->error()
      *
      * @param string $msg The message to output.
      * @return void
      */
-    public function err($msg)
-    {
+    public function err($msg) {
         if (!empty($this->controller->Flash)) {
             $this->controller->Flash->error($msg);
         } else {
-            $this->Shell->err($msg);
+            $this->io->err($msg);
         }
     }
 
@@ -166,8 +156,7 @@ class AclExtras
      * @param array $params An array of parameters
      * @return void
      */
-    public function acoSync($params = [])
-    {
+    public function acoSync(array $params = []) {
         $this->_clean = true;
         $this->acoUpdate($params);
     }
@@ -178,8 +167,7 @@ class AclExtras
      * @param array $params An array of parameters
      * @return bool
      */
-    public function acoUpdate($params = [])
-    {
+    public function acoUpdate($params = []) {
         $root = $this->_checkNode($this->rootNode, $this->rootNode, null);
         if (empty($params['plugin'])) {
             $plugins = Plugin::loaded();
@@ -214,8 +202,7 @@ class AclExtras
      * @param \Acl\Model\Entity\Aco $root The root node of Aco Tree
      * @return void
      */
-    protected function _processControllers($root)
-    {
+    protected function _processControllers($root) {
         $controllers = $this->getControllerList();
         $this->foundACOs[$root->id] = $this->_updateControllers($root, $controllers);
     }
@@ -226,8 +213,7 @@ class AclExtras
      * @param \Acl\Model\Entity\Aco $root The root node of Aco Tree
      * @return void
      */
-    protected function _processPrefixes($root)
-    {
+    protected function _processPrefixes($root) {
         foreach (array_keys($this->getPrefixes()) as $prefix) {
             $controllers = $this->getControllerList(null, $prefix);
             $path = $this->rootNode . '/' . $prefix;
@@ -247,8 +233,7 @@ class AclExtras
      * @param string $plugin The name of the plugin to alias
      * @return string
      */
-    protected function _pluginAlias(string $plugin): string
-    {
+    protected function _pluginAlias(string $plugin): string {
         return preg_replace('/\//', '\\', Inflector::camelize($plugin));
     }
 
@@ -259,8 +244,7 @@ class AclExtras
      * @param array $plugins list of App plugins
      * @return void
      */
-    protected function _processPlugins($root, array $plugins = [])
-    {
+    protected function _processPlugins($root, array $plugins = []) {
         foreach ($plugins as $plugin) {
             $controllers = $this->getControllerList($plugin);
             $pluginAlias = $this->_pluginAlias($plugin);
@@ -317,8 +301,7 @@ class AclExtras
      * @param string $prefix Name of the prefix you are making controllers for.
      * @return array
      */
-    protected function _updateControllers($root, array $controllers, string $plugin = '', string $prefix = '')
-    {
+    protected function _updateControllers($root, array $controllers, string $plugin = '', string $prefix = '') {
         $pluginPath = $this->_pluginAlias($plugin);
 
         // look at each controller
@@ -359,16 +342,29 @@ class AclExtras
      * @param string $prefix Name of prefix to get controllers for
      * @return array
      */
-    public function getControllerList($plugin = null, $prefix = null)
-    {
+    public function getControllerList($plugin = null, $prefix = null) {
+        $controllers = [];
+
         if (!$plugin) {
             $path = App::classPath('Controller' . (empty($prefix) ? '' : DS . Inflector::camelize($prefix)));
-            $dir = new Folder($path[0]);
-            $controllers = $dir->find('.*Controller\.php');
+
+            if (is_dir($path[0])) {
+                foreach (scandir($path[0]) as $file) {
+                    if (preg_match('/.*Controller\.php$/', $file)) {
+                        $controllers[] = $file;
+                    }
+                }
+            }
         } else {
             $path = Plugin::classPath($plugin) . 'Controller' . DS . (empty($prefix) ? '' : DS . Inflector::camelize($prefix));
-            $dir = new Folder($path);
-            $controllers = $dir->find('.*Controller\.php');
+
+            if (is_dir($path)) {
+                foreach (scandir($path) as $file) {
+                    if (preg_match('/.*Controller\.php$/', $file)) {
+                        $controllers[] = $file;
+                    }
+                }
+            }
         }
 
         return $controllers;
@@ -380,10 +376,9 @@ class AclExtras
      * @param string $path The path to check
      * @param string $alias The alias to create
      * @param int $parentId The parent id to use when creating.
-     * @return array Aco Node array
+     * @return Aco Aco Node array
      */
-    protected function _checkNode($path, $alias, $parentId = null)
-    {
+    protected function _checkNode($path, $alias, $parentId = null) {
         $node = $this->Aco->node($path);
         if (!$node) {
             $aliases = explode('/', $alias);
@@ -391,8 +386,8 @@ class AclExtras
                 $parentId = !empty($node) ? $node->id : $parentId;
                 $data = [
                     'parent_id' => $parentId,
-                    'model' => null,
-                    'alias' => $newAlias,
+                    'model'     => null,
+                    'alias'     => $newAlias,
                 ];
                 $entity = $this->Aco->newEntity($data);
                 $node = $this->Aco->save($entity);
@@ -413,8 +408,7 @@ class AclExtras
      * @param string $prefixPath The prefix path.
      * @return array
      */
-    protected function _getCallbacks($className, $pluginPath = null, $prefixPath = null)
-    {
+    protected function _getCallbacks($className, $pluginPath = null, $prefixPath = null) {
         $callbacks = [];
         $namespace = $this->_getNamespace($className, $pluginPath, $prefixPath);
         $reflection = new \ReflectionClass($namespace);
@@ -456,10 +450,9 @@ class AclExtras
      * @param string $prefixPath The prefix path to use.
      * @return bool
      */
-    protected function _checkMethods($className, $controllerName, $node, $pluginPath = null, $prefixPath = null)
-    {
+    protected function _checkMethods($className, $controllerName, $node, $pluginPath = null, $prefixPath = null) {
         $excludes = $this->_getCallbacks($className, $pluginPath, $prefixPath);
-        $baseMethods = get_class_methods(new Controller());
+        $baseMethods = get_class_methods(new Controller(new ServerRequest()));
         $namespace = $this->_getNamespace($className, $pluginPath, $prefixPath);
         $methods = get_class_methods($namespace);
         if ($methods == null) {
@@ -494,11 +487,11 @@ class AclExtras
     /**
      * Recover an Acl Tree
      *
+     * @params string $type aco or aro
      * @return void
      */
-    public function recover()
-    {
-        $type = Inflector::camelize($this->args[0]);
+    public function recover(string $type) {
+        $type = Inflector::camelize($type);
         $this->Acl->{$type}->recover();
         $this->out(__('Tree has been recovered, or tree did not need recovery.'));
     }
@@ -511,8 +504,7 @@ class AclExtras
      * @param string $prefixPath The prefix path.
      * @return string
      */
-    protected function _getNamespace($className, $pluginPath = null, $prefixPath = null)
-    {
+    protected function _getNamespace($className, $pluginPath = null, $prefixPath = null) {
         $namespace = preg_replace('/(.*)Controller\//', '', $className);
         $namespace = preg_replace('/\//', '\\', $namespace);
         $namespace = preg_replace('/\.php/', '', $namespace);
@@ -537,8 +529,7 @@ class AclExtras
      *
      * @return void
      */
-    protected function _buildPrefixes()
-    {
+    protected function _buildPrefixes() {
         $routes = Router::routes();
         foreach ($routes as $key => $route) {
             if (isset($route->defaults['prefix'])) {
@@ -563,8 +554,7 @@ class AclExtras
      * @param array $preservedItems list of items that will not be erased.
      * @return void
      */
-    protected function _cleaner($parentId, $preservedItems = [])
-    {
+    protected function _cleaner($parentId, $preservedItems = []) {
         $nodes = $this->Aco->find()->where(['parent_id' => $parentId]);
         $methodFlip = [];
         foreach ($preservedItems as $preservedItem) {
@@ -575,7 +565,10 @@ class AclExtras
         }
         foreach ($nodes as $node) {
             if (!isset($methodFlip[$node->alias])) {
-                $crumbs = $this->Aco->find('path', ['for' => $node->id, 'order' => 'lft']);
+                $crumbs = $this->Aco->find('path',
+                    for: $node->id,
+                    order: 'lft'
+                );
                 $path = null;
                 foreach ($crumbs as $crumb) {
                     $path .= '/' . $crumb->alias;
@@ -593,8 +586,7 @@ class AclExtras
      *
      * @return array
      */
-    public function getPrefixes()
-    {
+    public function getPrefixes() {
         return $this->prefixes;
     }
 
@@ -603,8 +595,7 @@ class AclExtras
      *
      * @return array
      */
-    public function getPluginPrefixes()
-    {
+    public function getPluginPrefixes() {
         return $this->pluginPrefixes;
     }
 
@@ -613,29 +604,29 @@ class AclExtras
      *
      * @return \Cake\Controller\Controller
      */
-    public function getController()
-    {
+    public function getController() {
         return $this->controller;
     }
 
-    /**
-     * Get the attached shell.
-     *
-     * @return \Cake\Console\Shell
-     */
-    public function getShell()
-    {
-        return $this->Shell;
-    }
 
     /**
-     * Attach a shell for output.
+     * Attach a IO for output.
      *
-     * @param \Cake\Console\Shell $shell Shell to attach
+     * @param ConsoleIo $io ConsoleIo to attach
      * @return void
      */
-    public function setShell(Shell $shell)
-    {
-        $this->Shell = $shell;
+    public function setIo(ConsoleIo $io) {
+        $this->io = $io;
     }
+
+
+    /**
+     * Get the attached ConsoleIo.
+     *
+     * @return ConsoleIo
+     */
+    public function getIo() {
+        return $this->io;
+    }
+
 }
