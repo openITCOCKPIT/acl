@@ -36,7 +36,7 @@ class AclNodesTable extends Table
      */
     public static function defaultConnectionName(): string
     {
-        return Configure::read('Acl.database');
+        return Configure::read('Acl.database', 'default');
     }
 
     /**
@@ -101,7 +101,7 @@ class AclNodesTable extends Table
                     ],
                 ];
             }
-            $query = $this->find('all', $queryData);
+            $query = $this->find('all', ...$queryData);
             $result = $query->toArray();
             $path = array_values($path);
 
@@ -180,7 +180,7 @@ class AclNodesTable extends Table
                 ],
                 'order' => ["{$type}.lft" => 'DESC'],
             ];
-            $query = $this->find('all', $queryData);
+            $query = $this->find('all', ...$queryData);
 
             if ($query->count() == 0) {
                 throw new Exception\Exception(__d('cake_dev', "AclNode::node() - Couldn't find %s node identified by \"%s\"", [$type, print_r($ref, true)]));

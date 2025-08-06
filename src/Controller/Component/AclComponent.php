@@ -65,7 +65,7 @@ class AclComponent extends Component
     public function __construct(ComponentRegistry $collection, array $config = [])
     {
         parent::__construct($collection, $config);
-        $className = $name = Configure::read('Acl.classname');
+        $className = $name = Configure::read('Acl.classname', 'DbAcl');
         if (!class_exists($className)) {
             $className = App::className('Acl.' . $name, 'Adapter');
             if (!$className) {
